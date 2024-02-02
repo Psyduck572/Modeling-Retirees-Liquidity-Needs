@@ -153,7 +153,7 @@ for(i in 1:n){
 length(unique(final_long$HHIDPN))
 ```
 
-From our initial 42405 observations in the "wide" format, this new long format has 30127 observations with 16060 unique HHIDPNs. The relatively low value is a positive indication that many individuals were observed over multiple years with the specified criteria. Now, we subset this data to identify individuals who were observed with the criteria beginning at age 65. Since an individual is either observed at "even" or "odd" years of their age, we consider: 65, 67, 69 and 66, 68, 70. Since an observation includes the previous two years, an individual observed at AGE=66 will include their "65" data. 
+Now, we subset this data to identify individuals who were observed with the criteria beginning at age 65. Since an individual is either observed at "even" or "odd" years of their age, we consider: 65, 67, 69 and 66, 68, 70. Since an observation includes the previous two years, an individual observed at AGE=66 will include their "65" data. 
 
 ```{r echo=FALSE}
 # Start at age 65
