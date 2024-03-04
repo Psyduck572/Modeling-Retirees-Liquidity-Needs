@@ -1,0 +1,167 @@
+---
+title: "Class"
+author: "Jessica Rizzo"
+date: "2024-03-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+# Load packages
+library(tidyverse)
+library(lmtest)
+library(pROC)
+library(ROSE)
+library(rpart)
+```
+
+```{r}
+# Necessary data adjustments
+data_adj <- function(data){
+  data <- select(data, -c("X")) %>%
+    mutate("MARRIED"=ifelse(MARRIED=="1.Yes", 1, 0)) %>%
+    mutate("LSHOCK" = rep(NA)) %>%
+    mutate("NEW_CONDS"=ifelse(NEW_CONDS=="1.Yes", 1, NEW_CONDS)) %>%
+    mutate("NEW_CONDS"=ifelse(NEW_CONDS=="0.No", 0, NEW_CONDS)) %>%
+    mutate("NEW_CONDS"=as.numeric(NEW_CONDS)) %>%
+    mutate("PREV_SPEND" = rep(NA)) %>%
+    mutate("YEARS_PAST_65" = AGE - 65)
+  return(data)
+}
+```
+
+```{r}
+# Necessary data adjustments + this removes the log from spending (which helps a bit)
+data_adj2 <- function(data){
+  data <- select(data, -c("X")) %>%
+    mutate("MARRIED"=ifelse(MARRIED=="1.Yes", 1, 0)) %>%
+    mutate("LSHOCK" = rep(NA)) %>%
+    mutate("NEW_CONDS"=ifelse(NEW_CONDS=="1.Yes", 1, NEW_CONDS)) %>%
+    mutate("NEW_CONDS"=ifelse(NEW_CONDS=="0.No", 0, NEW_CONDS)) %>%
+    mutate("NEW_CONDS"=as.numeric(NEW_CONDS)) %>%
+    mutate("PREV_SPEND" = rep(NA)) %>%
+    mutate("YEARS_PAST_65" = AGE - 65) %>%
+    mutate("SPEND_SS" = exp(1)^SPEND_SS)
+  return(data)
+}
+```
+
+```{r}
+# Computes LSHOCK = 1 if % increase in spending is greater than thresh, 0 otherwise
+shock <- function(data, thresh){
+  # Check wealth shock at each year
+  u <- unique(data$HHIDPN)
+  k <- 1
+  for(i in u){
+    k <- k + 1
+    this_person <- subset(data, data$HHIDPN==i)
+    person_l <- length(this_person$HHIDPN)
+    for(j in 2:person_l){
+      this_years <- this_person$SPEND_SS[j]
+      last_years <- this_person$SPEND_SS[j-1]
+      if(this_years >= (log(thresh) + last_years)){
+        data$LSHOCK[k] <- 1
+        data$PREV_SPEND[k] <- data$SPEND_SS[k-1]
+      } else{
+        data$LSHOCK[k] <- 0
+        data$PREV_SPEND[k] <- data$SPEND_SS[k-1]
+      }
+      k <- k + 1
+    }
+  }
+  data <- subset(data, !is.na(data$LSHOCK))
+  return(data)
+}
+```
+
+
+```{r}
+# Computes % change from age to age for all data points
+change <- function(data){
+  u <- unique(data$HHIDPN)
+  k <- 1
+  change <- rep(NA, length(data$HHIDPN))
+  for(i in u){
+    k <- k + 1
+    this_person <- subset(data, data$HHIDPN==i)
+    person_l <- length(this_person$HHIDPN)
+    for(j in 2:person_l){
+      this_years <- this_person$SPEND_SS[j]
+      last_years <- this_person$SPEND_SS[j-1]
+      change[k] <- (this_years - last_years)/last_years
+    }
+  }
+  change <- subset(change, !is.na(change))
+  return(change)
+}
+```
+
+```{r}
+# Logistic regression model - variables selected w/ backwards selection
+model <- function(data){
+  mod <- glm(LSHOCK ~ HEALTH_CHANGE + NEW_CONDS + HOSP + NRS_HOME + DOCTOR, family = 'binomial', data=ss_train)
+  return(mod)
+}
+```
+
+
+```{r}
+# Confusion Matrix, model, test data, threshold if predicted probability >= thresh -> predict 1, otherwise predict 0
+performance <- function(model, data, thresh){
+  fit_vals <- predict(model,data,type='response')
+  true_neg <- 0
+  true_pos <- 0
+  false_neg <- 0
+  false_pos <- 0
+  for(i in 1:length(data$LSHOCK)){
+    if(fit_vals[i] >= thresh){
+      if(data$LSHOCK[i]==1){
+        true_pos <- true_pos + 1
+      }else{
+      false_pos <- false_pos + 1
+    }
+    }else{
+      if(data$LSHOCK[i]==0){
+        true_neg <- true_neg + 1
+      }else{
+        false_neg <- false_neg + 1
+      }
+    }
+  }
+  cm <- matrix(data=c(true_pos, false_pos, false_neg, true_neg), 2, 2, byrow = TRUE, dimnames = list("Predicted" = c("+", "-"), "Actual" = c("+", "-")))
+  cat("Confusion Matrix:\n")
+  print(cm)
+}
+```
+
+```{r}
+# TRAINING
+t <- 1.5
+ss_train <- data_adj(read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_train.csv"))
+ss_train <- shock(ss_train, t)
+mod <- model(ss_train)
+summary(mod)
+performance(mod, ss_train, .51)
+```
+
+```{r}
+# TEST
+ss_test <- data_adj(read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_test.csv"))
+ss_test <- shock(ss_test, t)
+performance(mod, ss_test, .51)
+```
+
+```{r}
+# PLOTS TO INVESTIGATE ERRORS
+plot(predict(class_mod,ss_test,type='response'), ss_test$LSHOCK, xlab="P(LSHOCK=1)", ylab="LSHOCK")
+c <- change(ss_train)
+plot(subset(c, c < 6000), xlab="n=28161", ylab="% Increase in Spending from Year to Year")
+```
+
+```{r}
+# Also tried lda, qda, classification tree, but removed the code bc they had poor performance
+```
+
