@@ -88,7 +88,7 @@ ss_train <- subset(ss_train, !is.na(ss_train$percent_increase))
 
 ```{r}
 # Shock variable with 2 classes
-ss_train$SHOCK2 = ifelse(ss_train$percent_increase >= 1.5, 1, 0)
+ss_train$SHOCK2 = ifelse(ss_train$percent_increase >= t1, 1, 0)
 
 # Shock variables with 3 classes
 ss_train$SHOCK3 = ss_train$SHOCK2
@@ -121,7 +121,7 @@ ss_test <- subset(ss_test, !is.na(ss_test$percent_increase))
 
 ```{r}
 # Shock variable with 2 classes
-ss_test$SHOCK2 = ifelse(ss_test$percent_increase >= 1.5, 1, 0)
+ss_test$SHOCK2 = ifelse(ss_test$percent_increase >= t1, 1, 0)
 
 # Shock variables with 3 classes
 ss_test$SHOCK3 = ss_test$SHOCK2
