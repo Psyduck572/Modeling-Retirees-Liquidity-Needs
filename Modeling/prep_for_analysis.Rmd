@@ -1,0 +1,134 @@
+---
+title: "prepare_data"
+author: "Jessica Rizzo"
+date: "2024-03-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load packages
+library(tidyverse)
+```
+
+```{r}
+ss_train <- read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_train.csv")
+ss_test <- read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_test.csv")
+```
+
+```{r}
+# Drop x that was added by csv
+ss_train <- select(ss_train, -c(X))
+ss_test <- select(ss_test, -c(X))
+```
+
+```{r}
+# Make factor variables
+ss_train <- mutate(ss_train, "HBP" = as.factor(HBP)) %>%
+  mutate("DIABETES" = as.factor(DIABETES)) %>%
+  mutate("CANCER" = as.factor(CANCER)) %>%
+  mutate("LUNGS" = as.factor(LUNGS)) %>%
+  mutate("HEART_ATTACK" = as.factor(HEART_ATTACK)) %>%
+  mutate("STROKE" = as.factor(STROKE)) %>%
+  mutate("PSYCH" = as.factor(PSYCH)) %>%
+  mutate("ARTHRITIS" = as.factor(ARTHRITIS)) %>%
+  mutate("OUT_PT" = as.factor(OUT_PT)) %>%
+  mutate("DRUGS" = as.factor(DRUGS)) %>%
+  mutate("HOME_CARE" = as.factor(HOME_CARE)) %>%
+  mutate("SPECIAL_FAC" = as.factor(SPECIAL_FAC))
+
+ss_test <- mutate(ss_test, "HBP" = as.factor(HBP)) %>%
+  mutate("DIABETES" = as.factor(DIABETES)) %>%
+  mutate("CANCER" = as.factor(CANCER)) %>%
+  mutate("LUNGS" = as.factor(LUNGS)) %>%
+  mutate("HEART_ATTACK" = as.factor(HEART_ATTACK)) %>%
+  mutate("STROKE" = as.factor(STROKE)) %>%
+  mutate("PSYCH" = as.factor(PSYCH)) %>%
+  mutate("ARTHRITIS" = as.factor(ARTHRITIS)) %>%
+  mutate("OUT_PT" = as.factor(OUT_PT)) %>%
+  mutate("DRUGS" = as.factor(DRUGS)) %>%
+  mutate("HOME_CARE" = as.factor(HOME_CARE)) %>%
+  mutate("SPECIAL_FAC" = as.factor(SPECIAL_FAC))
+```
+
+```{r}
+# Remove log transformation
+ss_train$SPEND_SS = exp(ss_train$SPEND_SS)
+ss_test$SPEND_SS = exp(ss_test$SPEND_SS)
+```
+
+```{r}
+# Set levels for percent increase
+t1 <- 1.5
+t2 <- 2.5
+```
+
+```{r}
+# Create % increase variable
+ss_train$percent_increase = rep(NA, length(ss_train$HHIDPN))
+# Check wealth shock at each year
+u <- unique(ss_train$HHIDPN)
+k <- 1
+for(i in u){
+  k <- k + 1
+  this_person <- subset(ss_train, ss_train$HHIDPN==i)
+  person_l <- length(this_person$HHIDPN)
+  for(j in 2:person_l){
+    this_years <- this_person$SPEND_SS[j]
+    last_years <- this_person$SPEND_SS[j-1]
+    ss_train$percent_increase[k] <- round((this_years - last_years)/last_years, 3)
+    k <- k + 1
+  }
+}
+ss_train <- subset(ss_train, !is.na(ss_train$percent_increase))
+```
+
+```{r}
+# Shock variable with 2 classes
+ss_train$SHOCK2 = ifelse(ss_train$percent_increase >= 1.5, 1, 0)
+
+# Shock variables with 3 classes
+ss_train$SHOCK3 = ss_train$SHOCK2
+ss_train$SHOCK3[ss_train$percent_increase > t2] = 2
+
+# Make factors
+ss_train$SHOCK2 = as.factor(ss_train$SHOCK2)
+ss_train$SHOCK3 = as.factor(ss_train$SHOCK3)
+```
+
+```{r}
+# Create % increase variable
+ss_test$percent_increase = rep(NA, length(ss_test$HHIDPN))
+# Check wealth shock at each year
+u <- unique(ss_test$HHIDPN)
+k <- 1
+for(i in u){
+  k <- k + 1
+  this_person <- subset(ss_test, ss_test$HHIDPN==i)
+  person_l <- length(this_person$HHIDPN)
+  for(j in 2:person_l){
+    this_years <- this_person$SPEND_SS[j]
+    last_years <- this_person$SPEND_SS[j-1]
+    ss_test$percent_increase[k] <- round((this_years - last_years)/last_years, 3)
+    k <- k + 1
+  }
+}
+ss_test <- subset(ss_test, !is.na(ss_test$percent_increase))
+```
+
+```{r}
+# Shock variable with 2 classes
+ss_test$SHOCK2 = ifelse(ss_test$percent_increase >= 1.5, 1, 0)
+
+# Shock variables with 3 classes
+ss_test$SHOCK3 = ss_test$SHOCK2
+ss_test$SHOCK3[ss_test$percent_increase > t2] = 2
+
+# Make factors
+ss_test$SHOCK2 = as.factor(ss_test$SHOCK2)
+ss_test$SHOCK3 = as.factor(ss_test$SHOCK3)
+```
+
