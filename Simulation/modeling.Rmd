@@ -1,0 +1,218 @@
+---
+title: "prepare_data"
+author: "Jessica Rizzo"
+date: "2024-03-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load packages
+library(tidyverse)
+```
+
+```{r}
+ss_train <- read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_train.csv")
+ss_test <- read.csv("/Users/jessicarizzo/Desktop/Project/Data Clean/ss_test.csv")
+```
+
+```{r}
+# Drop x that was added by csv
+ss_train <- select(ss_train, -c(X))
+ss_test <- select(ss_test, -c(X))
+```
+
+```{r}
+# Make factor variables
+ss_train <- mutate(ss_train, "HBP" = as.factor(HBP)) %>%
+  mutate("DIABETES" = as.factor(DIABETES)) %>%
+  mutate("CANCER" = as.factor(CANCER)) %>%
+  mutate("LUNGS" = as.factor(LUNGS)) %>%
+  mutate("HEART_ATTACK" = as.factor(HEART_ATTACK)) %>%
+  mutate("STROKE" = as.factor(STROKE)) %>%
+  mutate("PSYCH" = as.factor(PSYCH)) %>%
+  mutate("ARTHRITIS" = as.factor(ARTHRITIS)) %>%
+  mutate("OUT_PT" = as.factor(OUT_PT)) %>%
+  mutate("DRUGS" = as.factor(DRUGS)) %>%
+  mutate("HOME_CARE" = as.factor(HOME_CARE)) %>%
+  mutate("SPECIAL_FAC" = as.factor(SPECIAL_FAC))
+
+ss_test <- mutate(ss_test, "HBP" = as.factor(HBP)) %>%
+  mutate("DIABETES" = as.factor(DIABETES)) %>%
+  mutate("CANCER" = as.factor(CANCER)) %>%
+  mutate("LUNGS" = as.factor(LUNGS)) %>%
+  mutate("HEART_ATTACK" = as.factor(HEART_ATTACK)) %>%
+  mutate("STROKE" = as.factor(STROKE)) %>%
+  mutate("PSYCH" = as.factor(PSYCH)) %>%
+  mutate("ARTHRITIS" = as.factor(ARTHRITIS)) %>%
+  mutate("OUT_PT" = as.factor(OUT_PT)) %>%
+  mutate("DRUGS" = as.factor(DRUGS)) %>%
+  mutate("HOME_CARE" = as.factor(HOME_CARE)) %>%
+  mutate("SPECIAL_FAC" = as.factor(SPECIAL_FAC))
+```
+
+```{r}
+# Remove log transformation for logistic regression
+ss_train$SPEND_SS = exp(ss_train$SPEND_SS)
+ss_test$SPEND_SS = exp(ss_test$SPEND_SS)
+ss_train$LAST_YEAR = exp(ss_train$LAST_YEAR)
+ss_test$LAST_YEAR = exp(ss_test$LAST_YEAR)
+```
+
+```{r}
+# Confusion Matrix, model, test data, threshold if predicted probability >= thresh -> predict 1, otherwise predict 0
+performance <- function(model, data, thresh){
+  fit_vals <- predict(model,data,type='response')
+  true_neg <- 0
+  true_pos <- 0
+  false_neg <- 0
+  false_pos <- 0
+  for(i in 1:length(data$SHOCK2)){
+    if(fit_vals[i] >= thresh){
+      if(data$SHOCK2[i]==1){
+        true_pos <- true_pos + 1
+      }else{
+      false_pos <- false_pos + 1
+    }
+    }else{
+      if(data$SHOCK2[i]==0){
+        true_neg <- true_neg + 1
+      }else{
+        false_neg <- false_neg + 1
+      }
+    }
+  }
+  cm <- matrix(data=c(true_pos, false_pos, false_neg, true_neg), 2, 2, byrow = TRUE, dimnames = list("Predicted" = c("+", "-"), "Actual" = c("+", "-")))
+  cat("Confusion Matrix:\n")
+  print(cm)
+  print((false_pos + false_neg)/length(data$HHIDPN))
+}
+```
+
+```{r}
+t <- 1.15
+# Create % increase variable - TRAIN
+ss_train$percent_increase = rep(NA, length(ss_train$HHIDPN))
+# Check wealth shock at each year
+u <- unique(ss_train$HHIDPN)
+k <- 1
+for(i in u){
+  this_person <- subset(ss_train, ss_train$HHIDPN==i)
+  person_l <- length(this_person$HHIDPN)
+  avg_person <- this_person$LAST_YEAR[1]
+  for(j in 1:person_l){
+    ss_train$percent_increase[k] <- ifelse(avg_person == 0, round(this_person$SPEND_SS[j], 3), round((this_person$SPEND_SS[j] - avg_person/j)/avg_person/j, 3))
+    if(this_person$SPEND_SS[j] < t){
+      avg_person <- avg_person + this_person$SPEND_SS[j]
+    }
+    k <- k + 1
+  }
+}
+```
+
+```{r}
+t <- 1.15
+# Create % increase variable - TEST
+ss_test$percent_increase = rep(NA, length(ss_test$HHIDPN))
+# Check wealth shock at each year
+u <- unique(ss_test$HHIDPN)
+k <- 1
+for(i in u){
+  this_person <- subset(ss_test, ss_test$HHIDPN==i)
+  person_l <- length(this_person$HHIDPN)
+  avg_person <- this_person$LAST_YEAR[1]
+  for(j in 1:person_l){
+    ss_test$percent_increase[k] <- ifelse(avg_person == 0, round(this_person$SPEND_SS[j], 3), round((this_person$SPEND_SS[j] - avg_person/j)/avg_person/j, 3))
+    if(this_person$SPEND_SS[j] < t){
+      avg_person <- avg_person + this_person$SPEND_SS[j]
+    }
+    k <- k + 1
+  }
+}
+```
+
+```{r}
+# Shock variable with 2 classes
+ss_test$SHOCK2 = ifelse(ss_test$percent_increase >= t, 1, 0)
+ss_test$SHOCK2 = ifelse(is.na(ss_test$SHOCK2), 0, ss_test$SHOCK2)
+
+# Make factor
+ss_test$SHOCK2 = as.factor(ss_test$SHOCK2)
+
+# Shock variable with 2 classes
+ss_train$SHOCK2 = ifelse(ss_train$percent_increase >= t, 1, 0)
+ss_train$SHOCK2 = ifelse(is.na(ss_train$SHOCK2), 0, ss_train$SHOCK2)
+
+# Make factor
+ss_train$SHOCK2 = as.factor(ss_train$SHOCK2)
+```
+
+```{r}
+# Logistic regression model - variables selected w/ backwards selection
+mod <- glm(SHOCK2 ~ AGE + HEALTH_CHANGE + HBP + STROKE + ARTHRITIS + DRUGS + SPECIAL_FAC + HOSPITAL + DOCTOR + NURSING_HOME, family="binomial", data=ss_train)
+summary(mod)
+
+performance(mod, ss_train, .15)
+performance(mod, ss_test, .15)
+```
+
+```{r}
+# Use predicted shock value to separate data
+ss_train$PRED_SHOCK <- predict(mod,ss_train,type='response') >= .15
+ss_test$PRED_SHOCK <- predict(mod,ss_test,type='response') >= .15
+
+ss_train$SPEND_SS <- log(ss_train$SPEND_SS)
+ss_test$SPEND_SS <- log(ss_test$SPEND_SS)
+
+shock_yes <- subset(ss_train, ss_train$PRED_SHOCK==TRUE)
+shock_no <- subset(ss_train, ss_train$PRED_SHOCK!=TRUE)
+
+test_shock_yes <- subset(ss_test, ss_test$PRED_SHOCK==TRUE)
+test_shock_no <- subset(ss_test, ss_test$PRED_SHOCK!=TRUE)
+```
+
+
+```{r}
+# Look for outliers
+plot(shock_yes$AGE, shock_yes$SPEND_SS)
+
+# Model
+mod_yes <- lm(SPEND_SS ~ AGE + PSYCH + DRUGS + HOME_CARE + HOSPITAL + DOCTOR + NURSING_HOME, data = shock_yes)
+summary(mod_yes)
+
+# Residuals
+plot(test_shock_yes$AGE, predict(mod_yes, test_shock_yes) - test_shock_yes$SPEND_SS)
+
+# Test MSE
+sum((predict(mod_yes, test_shock_yes) - test_shock_yes$SPEND_SS)^2, na.rm = TRUE)/921
+```
+
+```{r}
+# Look for outliers
+plot(shock_no$AGE, shock_no$SPEND_SS)
+
+# Model
+mod_no <- lm(SPEND_SS ~ AGE + HEALTH_CHANGE + DRUGS + HOME_CARE + DOCTOR + NURSING_HOME, data = shock_no)
+summary(mod_no)
+
+# Residuals
+plot(test_shock_no$AGE, predict(mod_no, test_shock_no) - test_shock_no$SPEND_SS)
+
+# Test MSE
+sum((predict(mod_no, test_shock_no) - test_shock_no$SPEND_SS)^2, na.rm = TRUE)/16591
+```
+
+```{r}
+write.csv(mod$coefficients, "/Users/jessicarizzo/Desktop/Project/Data Clean/log_model.csv")
+write.csv(mod_yes$coefficients, "/Users/jessicarizzo/Desktop/Project/Data Clean/yes_model.csv")
+write.csv(mod_no$coefficients, "/Users/jessicarizzo/Desktop/Project/Data Clean/no_model.csv")
+```
+
+```{r}
+write.csv(round(table(ss_train$AGE)/39, 4), "/Users/jessicarizzo/Desktop/Project/Data Clean/age_probs.csv")
+write.csv(round(table(table(ss_train$HHIDPN))/5601, 4), "/Users/jessicarizzo/Desktop/Project/Data Clean/yrs_probs.csv")
+```
+
