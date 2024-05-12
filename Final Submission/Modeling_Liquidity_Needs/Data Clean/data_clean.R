@@ -1,0 +1,521 @@
+# Read-in data
+hrs <- read.csv(paste(pwd, "/Data/hrs_new.csv", sep = ''))
+
+# For price adjustments - used later
+country <- "US"
+inflation_dataframe <- retrieve_inflation_data(country)
+countries_dataframe <- show_countries()
+
+# Create age variable (age in wave 4)
+hrs <- mutate(hrs, AGE=1998-as.numeric(RABYEAR)) %>%
+  # Delete observations where age is missing
+  drop_na(AGE) %>%
+  # Variables that will be included in liquid assets, replace NAs w/ zeros
+  ## RwDCBAL1
+  mutate(R4DCBAL1=ifelse(is.na(as.numeric(R4DCBAL1)), 0, as.numeric(R4DCBAL1))) %>%
+  mutate(R5DCBAL1=ifelse(is.na(as.numeric(R5DCBAL1)), 0, as.numeric(R5DCBAL1))) %>%
+  mutate(R6DCBAL1=ifelse(is.na(as.numeric(R6DCBAL1)), 0, as.numeric(R6DCBAL1))) %>%
+  mutate(R7DCBAL1=ifelse(is.na(as.numeric(R7DCBAL1)), 0, as.numeric(R7DCBAL1))) %>%
+  mutate(R8DCBAL1=ifelse(is.na(as.numeric(R8DCBAL1)), 0, as.numeric(R8DCBAL1))) %>%
+  mutate(R9DCBAL1=ifelse(is.na(as.numeric(R9DCBAL1)), 0, as.numeric(R9DCBAL1))) %>%
+  mutate(R10DCBAL1=ifelse(is.na(as.numeric(R10DCBAL1)), 0, as.numeric(R10DCBAL1))) %>%
+  mutate(R11DCBAL1=ifelse(is.na(as.numeric(R11DCBAL1)), 0, as.numeric(R11DCBAL1))) %>%
+  mutate(R12DCBAL1=ifelse(is.na(as.numeric(R12DCBAL1)), 0, as.numeric(R12DCBAL1))) %>%
+  mutate(R13DCBAL1=ifelse(is.na(as.numeric(R13DCBAL1)), 0, as.numeric(R13DCBAL1))) %>%
+  mutate(R14DCBAL1=ifelse(is.na(as.numeric(R14DCBAL1)), 0, as.numeric(R14DCBAL1))) %>%
+  mutate(R15DCBAL1=ifelse(is.na(as.numeric(R15DCBAL1)), 0, as.numeric(R15DCBAL1))) %>%
+  ## RwDCBAL2
+  mutate(R4DCBAL2=ifelse(is.na(as.numeric(R4DCBAL2)), 0, as.numeric(R4DCBAL2))) %>%
+  mutate(R5DCBAL2=ifelse(is.na(as.numeric(R5DCBAL2)), 0, as.numeric(R5DCBAL2))) %>%
+  mutate(R6DCBAL2=ifelse(is.na(as.numeric(R6DCBAL2)), 0, as.numeric(R6DCBAL2))) %>%
+  mutate(R7DCBAL2=ifelse(is.na(as.numeric(R7DCBAL2)), 0, as.numeric(R7DCBAL2))) %>%
+  mutate(R8DCBAL2=ifelse(is.na(as.numeric(R8DCBAL2)), 0, as.numeric(R8DCBAL2))) %>%
+  mutate(R9DCBAL2=ifelse(is.na(as.numeric(R9DCBAL2)), 0, as.numeric(R9DCBAL2))) %>%
+  mutate(R10DCBAL2=ifelse(is.na(as.numeric(R10DCBAL2)), 0, as.numeric(R10DCBAL2))) %>%
+  mutate(R11DCBAL2=ifelse(is.na(as.numeric(R11DCBAL2)), 0, as.numeric(R11DCBAL2))) %>%
+  mutate(R12DCBAL2=ifelse(is.na(as.numeric(R12DCBAL2)), 0, as.numeric(R12DCBAL2))) %>%
+  mutate(R13DCBAL2=ifelse(is.na(as.numeric(R13DCBAL2)), 0, as.numeric(R13DCBAL2))) %>%
+  mutate(R14DCBAL2=ifelse(is.na(as.numeric(R14DCBAL2)), 0, as.numeric(R14DCBAL2))) %>%
+  mutate(R15DCBAL2=ifelse(is.na(as.numeric(R15DCBAL2)), 0, as.numeric(R15DCBAL2))) %>%
+  ## RwDCBAL3
+  mutate(R4DCBAL3=ifelse(is.na(as.numeric(R4DCBAL3)), 0, as.numeric(R4DCBAL3))) %>%
+  mutate(R5DCBAL3=ifelse(is.na(as.numeric(R5DCBAL3)), 0, as.numeric(R5DCBAL3))) %>%
+  mutate(R6DCBAL3=ifelse(is.na(as.numeric(R6DCBAL3)), 0, as.numeric(R6DCBAL3))) %>%
+  mutate(R7DCBAL3=ifelse(is.na(as.numeric(R7DCBAL3)), 0, as.numeric(R7DCBAL3))) %>%
+  mutate(R8DCBAL3=ifelse(is.na(as.numeric(R8DCBAL3)), 0, as.numeric(R8DCBAL3))) %>%
+  mutate(R9DCBAL3=ifelse(is.na(as.numeric(R9DCBAL3)), 0, as.numeric(R9DCBAL3))) %>%
+  mutate(R10DCBAL3=ifelse(is.na(as.numeric(R10DCBAL3)), 0, as.numeric(R10DCBAL3))) %>%
+  mutate(R11DCBAL3=ifelse(is.na(as.numeric(R11DCBAL3)), 0, as.numeric(R11DCBAL3))) %>%
+  mutate(R12DCBAL3=ifelse(is.na(as.numeric(R12DCBAL3)), 0, as.numeric(R12DCBAL3))) %>%
+  mutate(R13DCBAL3=ifelse(is.na(as.numeric(R13DCBAL3)), 0, as.numeric(R13DCBAL3))) %>%
+  mutate(R14DCBAL3=ifelse(is.na(as.numeric(R14DCBAL3)), 0, as.numeric(R14DCBAL3))) %>%
+  mutate(R15DCBAL3=ifelse(is.na(as.numeric(R15DCBAL3)), 0, as.numeric(R15DCBAL3))) %>% 
+  ## RwDCBAL4
+  mutate(R5DCBAL4=ifelse(is.na(as.numeric(R5DCBAL4)), 0, as.numeric(R5DCBAL4))) %>%
+  mutate(R6DCBAL4=ifelse(is.na(as.numeric(R6DCBAL4)), 0, as.numeric(R6DCBAL4))) %>%
+  mutate(R7DCBAL4=ifelse(is.na(as.numeric(R7DCBAL4)), 0, as.numeric(R7DCBAL4))) %>%
+  mutate(R8DCBAL4=ifelse(is.na(as.numeric(R8DCBAL4)), 0, as.numeric(R8DCBAL4))) %>%
+  mutate(R9DCBAL4=ifelse(is.na(as.numeric(R9DCBAL4)), 0, as.numeric(R9DCBAL4))) %>%
+  mutate(R10DCBAL4=ifelse(is.na(as.numeric(R10DCBAL4)), 0, as.numeric(R10DCBAL4))) %>%
+  mutate(R11DCBAL4=ifelse(is.na(as.numeric(R11DCBAL4)), 0, as.numeric(R11DCBAL4))) %>%
+  mutate(R12DCBAL4=ifelse(is.na(as.numeric(R12DCBAL4)), 0, as.numeric(R12DCBAL4))) %>%
+  mutate(R13DCBAL4=ifelse(is.na(as.numeric(R13DCBAL4)), 0, as.numeric(R13DCBAL4))) %>%
+  mutate(R14DCBAL4=ifelse(is.na(as.numeric(R14DCBAL4)), 0, as.numeric(R14DCBAL4))) %>%
+  mutate(R15DCBAL4=ifelse(is.na(as.numeric(R15DCBAL4)), 0, as.numeric(R15DCBAL4))) %>% 
+  ## SwDCBAL1
+  mutate(S4DCBAL1=ifelse(is.na(as.numeric(S4DCBAL1)), 0, as.numeric(S4DCBAL1))) %>%
+  mutate(S5DCBAL1=ifelse(is.na(as.numeric(S5DCBAL1)), 0, as.numeric(S5DCBAL1))) %>%
+  mutate(S6DCBAL1=ifelse(is.na(as.numeric(S6DCBAL1)), 0, as.numeric(S6DCBAL1))) %>%
+  mutate(S7DCBAL1=ifelse(is.na(as.numeric(S7DCBAL1)), 0, as.numeric(S7DCBAL1))) %>%
+  mutate(S8DCBAL1=ifelse(is.na(as.numeric(S8DCBAL1)), 0, as.numeric(S8DCBAL1))) %>%
+  mutate(S9DCBAL1=ifelse(is.na(as.numeric(S9DCBAL1)), 0, as.numeric(S9DCBAL1))) %>%
+  mutate(S10DCBAL1=ifelse(is.na(as.numeric(S10DCBAL1)), 0, as.numeric(S10DCBAL1))) %>%
+  mutate(S11DCBAL1=ifelse(is.na(as.numeric(S11DCBAL1)), 0, as.numeric(S11DCBAL1))) %>%
+  mutate(S12DCBAL1=ifelse(is.na(as.numeric(S12DCBAL1)), 0, as.numeric(S12DCBAL1))) %>%
+  mutate(S13DCBAL1=ifelse(is.na(as.numeric(S13DCBAL1)), 0, as.numeric(S13DCBAL1))) %>%
+  mutate(S14DCBAL1=ifelse(is.na(as.numeric(S14DCBAL1)), 0, as.numeric(S14DCBAL1))) %>%
+  mutate(S15DCBAL1=ifelse(is.na(as.numeric(S15DCBAL1)), 0, as.numeric(S15DCBAL1))) %>%
+  ## SwDCBAL2
+  mutate(S4DCBAL2=ifelse(is.na(as.numeric(S4DCBAL2)), 0, as.numeric(S4DCBAL2))) %>%
+  mutate(S5DCBAL2=ifelse(is.na(as.numeric(S5DCBAL2)), 0, as.numeric(S5DCBAL2))) %>%
+  mutate(S6DCBAL2=ifelse(is.na(as.numeric(S6DCBAL2)), 0, as.numeric(S6DCBAL2))) %>%
+  mutate(S7DCBAL2=ifelse(is.na(as.numeric(S7DCBAL2)), 0, as.numeric(S7DCBAL2))) %>%
+  mutate(S8DCBAL2=ifelse(is.na(as.numeric(S8DCBAL2)), 0, as.numeric(S8DCBAL2))) %>%
+  mutate(S9DCBAL2=ifelse(is.na(as.numeric(S9DCBAL2)), 0, as.numeric(S9DCBAL2))) %>%
+  mutate(S10DCBAL2=ifelse(is.na(as.numeric(S10DCBAL2)), 0, as.numeric(S10DCBAL2))) %>%
+  mutate(S11DCBAL2=ifelse(is.na(as.numeric(S11DCBAL2)), 0, as.numeric(S11DCBAL2))) %>%
+  mutate(S12DCBAL2=ifelse(is.na(as.numeric(S12DCBAL2)), 0, as.numeric(S12DCBAL2))) %>%
+  mutate(S13DCBAL2=ifelse(is.na(as.numeric(S13DCBAL2)), 0, as.numeric(S13DCBAL2))) %>%
+  mutate(S14DCBAL2=ifelse(is.na(as.numeric(S14DCBAL2)), 0, as.numeric(S14DCBAL2))) %>%
+  mutate(S15DCBAL2=ifelse(is.na(as.numeric(S15DCBAL2)), 0, as.numeric(S15DCBAL2))) %>%
+  ## SwDCBAL3
+  mutate(S4DCBAL3=ifelse(is.na(as.numeric(S4DCBAL3)), 0, as.numeric(S4DCBAL3))) %>%
+  mutate(S5DCBAL3=ifelse(is.na(as.numeric(S5DCBAL3)), 0, as.numeric(S5DCBAL3))) %>%
+  mutate(S6DCBAL3=ifelse(is.na(as.numeric(S6DCBAL3)), 0, as.numeric(S6DCBAL3))) %>%
+  mutate(S7DCBAL3=ifelse(is.na(as.numeric(S7DCBAL3)), 0, as.numeric(S7DCBAL3))) %>%
+  mutate(S8DCBAL3=ifelse(is.na(as.numeric(S8DCBAL3)), 0, as.numeric(S8DCBAL3))) %>%
+  mutate(S9DCBAL3=ifelse(is.na(as.numeric(S9DCBAL3)), 0, as.numeric(S9DCBAL3))) %>%
+  mutate(S10DCBAL3=ifelse(is.na(as.numeric(S10DCBAL3)), 0, as.numeric(S10DCBAL3))) %>%
+  mutate(S11DCBAL3=ifelse(is.na(as.numeric(S11DCBAL3)), 0, as.numeric(S11DCBAL3))) %>%
+  mutate(S12DCBAL3=ifelse(is.na(as.numeric(S12DCBAL3)), 0, as.numeric(S12DCBAL3))) %>%
+  mutate(S13DCBAL3=ifelse(is.na(as.numeric(S13DCBAL3)), 0, as.numeric(S13DCBAL3))) %>%
+  mutate(S14DCBAL3=ifelse(is.na(as.numeric(S14DCBAL3)), 0, as.numeric(S14DCBAL3))) %>%
+  mutate(S15DCBAL3=ifelse(is.na(as.numeric(S15DCBAL3)), 0, as.numeric(S15DCBAL3))) %>% 
+  ## SwDCBAL4
+  mutate(S5DCBAL4=ifelse(is.na(as.numeric(S5DCBAL4)), 0, as.numeric(S5DCBAL4))) %>%
+  mutate(S6DCBAL4=ifelse(is.na(as.numeric(S6DCBAL4)), 0, as.numeric(S6DCBAL4))) %>%
+  mutate(S7DCBAL4=ifelse(is.na(as.numeric(S7DCBAL4)), 0, as.numeric(S7DCBAL4))) %>%
+  mutate(S8DCBAL4=ifelse(is.na(as.numeric(S8DCBAL4)), 0, as.numeric(S8DCBAL4))) %>%
+  mutate(S9DCBAL4=ifelse(is.na(as.numeric(S9DCBAL4)), 0, as.numeric(S9DCBAL4))) %>%
+  mutate(S10DCBAL4=ifelse(is.na(as.numeric(S10DCBAL4)), 0, as.numeric(S10DCBAL4))) %>%
+  mutate(S11DCBAL4=ifelse(is.na(as.numeric(S11DCBAL4)), 0, as.numeric(S11DCBAL4))) %>%
+  mutate(S12DCBAL4=ifelse(is.na(as.numeric(S12DCBAL4)), 0, as.numeric(S12DCBAL4))) %>%
+  mutate(S13DCBAL4=ifelse(is.na(as.numeric(S13DCBAL4)), 0, as.numeric(S13DCBAL4))) %>%
+  mutate(S14DCBAL4=ifelse(is.na(as.numeric(S14DCBAL4)), 0, as.numeric(S14DCBAL4))) %>%
+  mutate(S15DCBAL4=ifelse(is.na(as.numeric(S15DCBAL4)), 0, as.numeric(S15DCBAL4))) %>% 
+  ## HwAIRA
+  mutate(H4AIRA=ifelse(is.na(as.numeric(H4AIRA)), 0, as.numeric(H4AIRA))) %>%
+  mutate(H5AIRA=ifelse(is.na(as.numeric(H5AIRA)), 0, as.numeric(H5AIRA))) %>%
+  mutate(H6AIRA=ifelse(is.na(as.numeric(H6AIRA)), 0, as.numeric(H6AIRA))) %>%
+  mutate(H7AIRA=ifelse(is.na(as.numeric(H7AIRA)), 0, as.numeric(H7AIRA))) %>%  
+  mutate(H8AIRA=ifelse(is.na(as.numeric(H8AIRA)), 0, as.numeric(H8AIRA))) %>%
+  mutate(H9AIRA=ifelse(is.na(as.numeric(H9AIRA)), 0, as.numeric(H9AIRA))) %>%
+  mutate(H10AIRA=ifelse(is.na(as.numeric(H10AIRA)), 0, as.numeric(H10AIRA))) %>%
+  mutate(H11AIRA=ifelse(is.na(as.numeric(H11AIRA)), 0, as.numeric(H11AIRA))) %>%
+  mutate(H12AIRA=ifelse(is.na(as.numeric(H12AIRA)), 0, as.numeric(H12AIRA))) %>%
+  mutate(H13AIRA=ifelse(is.na(as.numeric(H13AIRA)), 0, as.numeric(H13AIRA))) %>%
+  mutate(H14AIRA=ifelse(is.na(as.numeric(H14AIRA)), 0, as.numeric(H14AIRA))) %>%
+  mutate(H15AIRA=ifelse(is.na(as.numeric(H15AIRA)), 0, as.numeric(H15AIRA))) %>%
+  ## HwASTCK
+  mutate(H4ASTCK=ifelse(is.na(as.numeric(H4ASTCK)), 0, as.numeric(H4ASTCK))) %>%  
+  mutate(H5ASTCK=ifelse(is.na(as.numeric(H5ASTCK)), 0, as.numeric(H5ASTCK))) %>%
+  mutate(H6ASTCK=ifelse(is.na(as.numeric(H6ASTCK)), 0, as.numeric(H6ASTCK))) %>%
+  mutate(H7ASTCK=ifelse(is.na(as.numeric(H7ASTCK)), 0, as.numeric(H7ASTCK))) %>%
+  mutate(H8ASTCK=ifelse(is.na(as.numeric(H8ASTCK)), 0, as.numeric(H8ASTCK))) %>%
+  mutate(H9ASTCK=ifelse(is.na(as.numeric(H9ASTCK)), 0, as.numeric(H9ASTCK))) %>%
+  mutate(H10ASTCK=ifelse(is.na(as.numeric(H10ASTCK)), 0, as.numeric(H10ASTCK))) %>%
+  mutate(H11ASTCK=ifelse(is.na(as.numeric(H11ASTCK)), 0, as.numeric(H11ASTCK))) %>%
+  mutate(H12ASTCK=ifelse(is.na(as.numeric(H12ASTCK)), 0, as.numeric(H12ASTCK))) %>%
+  mutate(H13ASTCK=ifelse(is.na(as.numeric(H13ASTCK)), 0, as.numeric(H13ASTCK))) %>%
+  mutate(H14ASTCK=ifelse(is.na(as.numeric(H14ASTCK)), 0, as.numeric(H14ASTCK))) %>%
+  mutate(H15ASTCK=ifelse(is.na(as.numeric(H15ASTCK)), 0, as.numeric(H15ASTCK))) %>%
+  ## HwACHCK
+  mutate(H4ACHCK=ifelse(is.na(as.numeric(H4ACHCK)), 0, as.numeric(H4ACHCK))) %>%  
+  mutate(H5ACHCK=ifelse(is.na(as.numeric(H5ACHCK)), 0, as.numeric(H5ACHCK))) %>%  
+  mutate(H6ACHCK=ifelse(is.na(as.numeric(H6ACHCK)), 0, as.numeric(H6ACHCK))) %>%  
+  mutate(H7ACHCK=ifelse(is.na(as.numeric(H7ACHCK)), 0, as.numeric(H7ACHCK))) %>%  
+  mutate(H8ACHCK=ifelse(is.na(as.numeric(H8ACHCK)), 0, as.numeric(H8ACHCK))) %>%  
+  mutate(H9ACHCK=ifelse(is.na(as.numeric(H9ACHCK)), 0, as.numeric(H9ACHCK))) %>%  
+  mutate(H10ACHCK=ifelse(is.na(as.numeric(H10ACHCK)), 0, as.numeric(H10ACHCK))) %>%  
+  mutate(H11ACHCK=ifelse(is.na(as.numeric(H11ACHCK)), 0, as.numeric(H11ACHCK))) %>%  
+  mutate(H12ACHCK=ifelse(is.na(as.numeric(H12ACHCK)), 0, as.numeric(H12ACHCK))) %>%  
+  mutate(H13ACHCK=ifelse(is.na(as.numeric(H13ACHCK)), 0, as.numeric(H13ACHCK))) %>%  
+  mutate(H14ACHCK=ifelse(is.na(as.numeric(H14ACHCK)), 0, as.numeric(H14ACHCK))) %>%  
+  mutate(H15ACHCK=ifelse(is.na(as.numeric(H15ACHCK)), 0, as.numeric(H15ACHCK))) %>%  
+  ## HwACD
+  mutate(H4ACD=ifelse(is.na(as.numeric(H4ACD)), 0, as.numeric(H4ACD))) %>%  
+  mutate(H5ACD=ifelse(is.na(as.numeric(H5ACD)), 0, as.numeric(H5ACD))) %>%  
+  mutate(H6ACD=ifelse(is.na(as.numeric(H6ACD)), 0, as.numeric(H6ACD))) %>%  
+  mutate(H7ACD=ifelse(is.na(as.numeric(H7ACD)), 0, as.numeric(H7ACD))) %>%
+  mutate(H8ACD=ifelse(is.na(as.numeric(H8ACD)), 0, as.numeric(H8ACD))) %>%
+  mutate(H9ACD=ifelse(is.na(as.numeric(H9ACD)), 0, as.numeric(H9ACD))) %>%
+  mutate(H10ACD=ifelse(is.na(as.numeric(H10ACD)), 0, as.numeric(H10ACD))) %>%
+  mutate(H11ACD=ifelse(is.na(as.numeric(H11ACD)), 0, as.numeric(H11ACD))) %>%
+  mutate(H12ACD=ifelse(is.na(as.numeric(H12ACD)), 0, as.numeric(H12ACD))) %>%
+  mutate(H13ACD=ifelse(is.na(as.numeric(H13ACD)), 0, as.numeric(H13ACD))) %>%
+  mutate(H14ACD=ifelse(is.na(as.numeric(H14ACD)), 0, as.numeric(H14ACD))) %>%
+  mutate(H15ACD=ifelse(is.na(as.numeric(H15ACD)), 0, as.numeric(H15ACD))) %>%
+  # HwABOND
+  mutate(H4ABOND=ifelse(is.na(as.numeric(H4ABOND)), 0, as.numeric(H4ABOND))) %>% 
+  mutate(H5ABOND=ifelse(is.na(as.numeric(H5ABOND)), 0, as.numeric(H5ABOND))) %>%
+  mutate(H6ABOND=ifelse(is.na(as.numeric(H6ABOND)), 0, as.numeric(H6ABOND))) %>%
+  mutate(H7ABOND=ifelse(is.na(as.numeric(H7ABOND)), 0, as.numeric(H7ABOND))) %>%
+  mutate(H8ABOND=ifelse(is.na(as.numeric(H8ABOND)), 0, as.numeric(H8ABOND))) %>%
+  mutate(H9ABOND=ifelse(is.na(as.numeric(H9ABOND)), 0, as.numeric(H9ABOND))) %>%
+  mutate(H10ABOND=ifelse(is.na(as.numeric(H10ABOND)), 0, as.numeric(H10ABOND))) %>%
+  mutate(H11ABOND=ifelse(is.na(as.numeric(H11ABOND)), 0, as.numeric(H11ABOND))) %>%
+  mutate(H12ABOND=ifelse(is.na(as.numeric(H12ABOND)), 0, as.numeric(H12ABOND))) %>%
+  mutate(H13ABOND=ifelse(is.na(as.numeric(H13ABOND)), 0, as.numeric(H13ABOND))) %>%
+  mutate(H14ABOND=ifelse(is.na(as.numeric(H14ABOND)), 0, as.numeric(H14ABOND))) %>%
+  mutate(H15ABOND=ifelse(is.na(as.numeric(H15ABOND)), 0, as.numeric(H15ABOND))) %>%
+  # HwAOTHR
+  mutate(H4AOTHR=ifelse(is.na(as.numeric(H4AOTHR)), 0, as.numeric(H4AOTHR)))%>%
+  mutate(H5AOTHR=ifelse(is.na(as.numeric(H5AOTHR)), 0, as.numeric(H5AOTHR))) %>%
+  mutate(H6AOTHR=ifelse(is.na(as.numeric(H6AOTHR)), 0, as.numeric(H6AOTHR))) %>%
+  mutate(H7AOTHR=ifelse(is.na(as.numeric(H7AOTHR)), 0, as.numeric(H7AOTHR))) %>%
+  mutate(H8AOTHR=ifelse(is.na(as.numeric(H8AOTHR)), 0, as.numeric(H8AOTHR))) %>%
+  mutate(H9AOTHR=ifelse(is.na(as.numeric(H9AOTHR)), 0, as.numeric(H9AOTHR))) %>%
+  mutate(H10AOTHR=ifelse(is.na(as.numeric(H10AOTHR)), 0, as.numeric(H10AOTHR))) %>%
+  mutate(H11AOTHR=ifelse(is.na(as.numeric(H11AOTHR)), 0, as.numeric(H11AOTHR))) %>%
+  mutate(H12AOTHR=ifelse(is.na(as.numeric(H12AOTHR)), 0, as.numeric(H12AOTHR))) %>%
+  mutate(H13AOTHR=ifelse(is.na(as.numeric(H13AOTHR)), 0, as.numeric(H13AOTHR))) %>%
+  mutate(H14AOTHR=ifelse(is.na(as.numeric(H14AOTHR)), 0, as.numeric(H14AOTHR))) %>%
+  mutate(H15AOTHR=ifelse(is.na(as.numeric(H15AOTHR)), 0, as.numeric(H15AOTHR))) %>%
+  # HwADBET
+  mutate(H4ADEBT=ifelse(is.na(as.numeric(H4ADEBT)), 0, as.numeric(H4ADEBT))) %>%
+  mutate(H5ADEBT=ifelse(is.na(as.numeric(H5ADEBT)), 0, as.numeric(H5ADEBT))) %>%
+  mutate(H6ADEBT=ifelse(is.na(as.numeric(H6ADEBT)), 0, as.numeric(H6ADEBT))) %>%
+  mutate(H7ADEBT=ifelse(is.na(as.numeric(H7ADEBT)), 0, as.numeric(H7ADEBT))) %>%
+  mutate(H8ADEBT=ifelse(is.na(as.numeric(H8ADEBT)), 0, as.numeric(H8ADEBT))) %>%
+  mutate(H9ADEBT=ifelse(is.na(as.numeric(H9ADEBT)), 0, as.numeric(H9ADEBT))) %>%
+  mutate(H10ADEBT=ifelse(is.na(as.numeric(H10ADEBT)), 0, as.numeric(H10ADEBT))) %>%
+  mutate(H11ADEBT=ifelse(is.na(as.numeric(H11ADEBT)), 0, as.numeric(H11ADEBT))) %>%
+  mutate(H12ADEBT=ifelse(is.na(as.numeric(H12ADEBT)), 0, as.numeric(H12ADEBT))) %>%
+  mutate(H13ADEBT=ifelse(is.na(as.numeric(H13ADEBT)), 0, as.numeric(H13ADEBT))) %>%
+  mutate(H14ADEBT=ifelse(is.na(as.numeric(H14ADEBT)), 0, as.numeric(H14ADEBT))) %>%
+  mutate(H15ADEBT=ifelse(is.na(as.numeric(H15ADEBT)), 0, as.numeric(H15ADEBT))) %>%
+  # Construct liquid assets variables
+  mutate(H4LIQA=R4DCBAL1 + R4DCBAL2 + R4DCBAL3 + S4DCBAL1 + S4DCBAL2 + S4DCBAL3 + H4AIRA + H4ASTCK + H4ACHCK + H4ACD + H4ABOND + H4AOTHR - H4ADEBT) %>%
+  mutate(H5LIQA=R5DCBAL1 + R5DCBAL2 + R5DCBAL3 + S5DCBAL1 + S5DCBAL2 + S5DCBAL3 + H5AIRA + H5ASTCK + H5ACHCK + H5ACD + H5ABOND + H5AOTHR - H5ADEBT) %>%
+  mutate(H6LIQA=R6DCBAL1 + R6DCBAL2 + R6DCBAL3 + S6DCBAL1 + S6DCBAL2 + S6DCBAL3 + H6AIRA + H6ASTCK + H6ACHCK + H6ACD + H6ABOND + H6AOTHR - H6ADEBT) %>%
+  mutate(H7LIQA=R7DCBAL1 + R7DCBAL2 + R7DCBAL3 + S7DCBAL1 + S7DCBAL2 + S7DCBAL3 + H7AIRA + H7ASTCK + H7ACHCK + H7ACD + H7ABOND + H7AOTHR - H7ADEBT) %>%
+  mutate(H8LIQA=R8DCBAL1 + R8DCBAL2 + R8DCBAL3 + S8DCBAL1 + S8DCBAL2 + S8DCBAL3 + H8AIRA + H8ASTCK + H8ACHCK + H8ACD + H8ABOND + H8AOTHR - H8ADEBT) %>%
+  mutate(H9LIQA=R9DCBAL1 + R9DCBAL2 + R9DCBAL3 + S9DCBAL1 + S9DCBAL2 + S9DCBAL3 + H9AIRA + H9ASTCK + H9ACHCK + H9ACD + H9ABOND + H9AOTHR - H9ADEBT) %>%
+  mutate(H10LIQA=R10DCBAL1 + R10DCBAL2 + R10DCBAL3 + S10DCBAL1 + S10DCBAL2 + S10DCBAL3 + H10AIRA + H10ASTCK + H10ACHCK + H10ACD + H10ABOND + H10AOTHR - H10ADEBT) %>%
+  mutate(H11LIQA=R11DCBAL1 + R11DCBAL2 + R11DCBAL3 + S11DCBAL1 + S11DCBAL2 + S11DCBAL3 + H11AIRA + H11ASTCK + H11ACHCK + H11ACD + H11ABOND + H11AOTHR - H11ADEBT) %>%
+  mutate(H12LIQA=R12DCBAL1 + R12DCBAL2 + R12DCBAL3 + S12DCBAL1 + S12DCBAL2 + S12DCBAL3 + H12AIRA + H12ASTCK + H12ACHCK + H12ACD + H12ABOND + H12AOTHR - H12ADEBT) %>%
+  mutate(H13LIQA=R13DCBAL1 + R13DCBAL2 + R13DCBAL3 + S13DCBAL1 + S13DCBAL2 + S13DCBAL3 + H13AIRA + H13ASTCK + H13ACHCK + H13ACD + H13ABOND + H13AOTHR - H13ADEBT) %>%
+  mutate(H14LIQA=R14DCBAL1 + R14DCBAL2 + R14DCBAL3 + S14DCBAL1 + S14DCBAL2 + S14DCBAL3 + H14AIRA + H14ASTCK + H14ACHCK + H14ACD + H14ABOND + H14AOTHR - H14ADEBT) %>%
+  mutate(H15LIQA=R15DCBAL1 + R15DCBAL2 + R15DCBAL3 + S15DCBAL1 + S15DCBAL2 + S15DCBAL3 + H15AIRA + H15ASTCK + H15ACHCK + H15ACD + H15ABOND + H15AOTHR - H15ADEBT) 
+
+# Drop un-needed variables
+hrs <- select(hrs, -c("R4DCBAL1", "R4DCBAL2", "R4DCBAL3", "S4DCBAL1", "S4DCBAL2", "S4DCBAL3", "H4AIRA", "H4ASTCK", "H4ACHCK", "H4ACD", "H4ABOND", "H4AOTHR", "H4ADEBT")) %>%
+  select(-c("R5DCBAL1", "R5DCBAL2", "R5DCBAL3", "R5DCBAL4", "S5DCBAL1", "S5DCBAL2", "S5DCBAL3", "S5DCBAL4", "H5AIRA", "H5ASTCK", "H5ACHCK", "H5ACD", "H5ABOND", "H5AOTHR", "H5ADEBT")) %>%
+  select(-c("R6DCBAL1", "R6DCBAL2", "R6DCBAL3", "R6DCBAL4", "S6DCBAL1", "S6DCBAL2", "S6DCBAL3", "S6DCBAL4", "H6AIRA", "H6ASTCK", "H6ACHCK", "H6ACD", "H6ABOND", "H6AOTHR", "H6ADEBT")) %>%
+  select(-c("R7DCBAL1", "R7DCBAL2", "R7DCBAL3", "R7DCBAL4", "S7DCBAL1", "S7DCBAL2", "S7DCBAL3", "S7DCBAL4", "H7AIRA", "H7ASTCK", "H7ACHCK", "H7ACD", "H7ABOND", "H7AOTHR", "H7ADEBT")) %>%
+  select(-c("R8DCBAL1", "R8DCBAL2", "R8DCBAL3", "R8DCBAL4", "S8DCBAL1", "S8DCBAL2", "S8DCBAL3", "S8DCBAL4", "H8AIRA", "H8ASTCK", "H8ACHCK", "H8ACD", "H8ABOND", "H8AOTHR", "H8ADEBT")) %>%
+  select(-c("R9DCBAL1", "R9DCBAL2", "R9DCBAL3", "R9DCBAL4", "S9DCBAL1", "S9DCBAL2", "S9DCBAL3", "S9DCBAL4", "H9AIRA", "H9ASTCK", "H9ACHCK", "H9ACD", "H9ABOND", "H9AOTHR", "H9ADEBT")) %>%
+  select(-c("R10DCBAL1", "R10DCBAL2", "R10DCBAL3", "R10DCBAL4", "S10DCBAL1", "S10DCBAL2", "S10DCBAL3", "S10DCBAL4", "H10AIRA", "H10ASTCK", "H10ACHCK", "H10ACD", "H10ABOND", "H10AOTHR", "H10ADEBT")) %>%
+  select(-c("R11DCBAL1", "R11DCBAL2", "R11DCBAL3", "R11DCBAL4", "S11DCBAL1", "S11DCBAL2", "S11DCBAL3", "S11DCBAL4", "H11AIRA", "H11ASTCK", "H11ACHCK", "H11ACD", "H11ABOND", "H11AOTHR", "H11ADEBT")) %>%
+  select(-c("R12DCBAL1", "R12DCBAL2", "R12DCBAL3", "R12DCBAL4", "S12DCBAL1", "S12DCBAL2", "S12DCBAL3", "S12DCBAL4", "H12AIRA", "H12ASTCK", "H12ACHCK", "H12ACD", "H12ABOND", "H12AOTHR", "H12ADEBT")) %>%
+  select(-c("R13DCBAL1", "R13DCBAL2", "R13DCBAL3", "R13DCBAL4", "S13DCBAL1", "S13DCBAL2", "S13DCBAL3", "S13DCBAL4", "H13AIRA", "H13ASTCK", "H13ACHCK", "H13ACD", "H13ABOND", "H13AOTHR", "H13ADEBT")) %>%
+  select(-c("R14DCBAL1", "R14DCBAL2", "R14DCBAL3", "R14DCBAL4", "S14DCBAL1", "S14DCBAL2", "S14DCBAL3", "S14DCBAL4", "H14AIRA", "H14ASTCK", "H14ACHCK", "H14ACD", "H14ABOND", "H14AOTHR", "H14ADEBT")) %>%
+  select(-c("R15DCBAL1", "R15DCBAL2", "R15DCBAL3", "R15DCBAL4", "S15DCBAL1", "S15DCBAL2", "S15DCBAL3", "S15DCBAL4", "H15AIRA", "H15ASTCK", "H15ACHCK", "H15ACD", "H15ABOND", "H15AOTHR", "H15ADEBT"))
+
+# To real dollars: OOPMD
+hrs <- mutate(hrs, R4OOPMD=adjust_for_inflation(R4OOPMD, 1998, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R5OOPMD=adjust_for_inflation(R5OOPMD, 2000, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R6OOPMD=adjust_for_inflation(R6OOPMD, 2002, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R7OOPMD=adjust_for_inflation(R7OOPMD, 2004, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R8OOPMD=adjust_for_inflation(R8OOPMD, 2006, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R9OOPMD=adjust_for_inflation(R9OOPMD, 2008, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R10OOPMD=adjust_for_inflation(R10OOPMD, 2010, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R11OOPMD=adjust_for_inflation(R11OOPMD, 2012, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R12OOPMD=adjust_for_inflation(R12OOPMD, 2014, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R13OOPMD=adjust_for_inflation(R13OOPMD, 2016, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R14OOPMD=adjust_for_inflation(R14OOPMD, 2018, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  # To real dollars: WEALTH
+  mutate(H4LIQA=adjust_for_inflation(H4LIQA, 1998, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H5LIQA=adjust_for_inflation(H5LIQA, 2000, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H6LIQA=adjust_for_inflation(H6LIQA, 2002, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H7LIQA=adjust_for_inflation(H7LIQA, 2004, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H8LIQA=adjust_for_inflation(H8LIQA, 2006, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H9LIQA=adjust_for_inflation(H9LIQA, 2008, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H10LIQA=adjust_for_inflation(H10LIQA, 2010, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H11LIQA=adjust_for_inflation(H11LIQA, 2012, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H12LIQA=adjust_for_inflation(H12LIQA, 2014, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H13LIQA=adjust_for_inflation(H13LIQA, 2016, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(H14LIQA=adjust_for_inflation(H14LIQA, 2018, country, to_date = 2020, inflation_dataframe = inflation_dataframe, countries_dataframe = countries_dataframe)) %>%
+  mutate(R15WTRESP = rep(NA, 42405)) %>%
+  select(-c("H3ATOTF", "H4ATOTF", "H5ATOTF", "H6ATOTF", "H7ATOTF", "H8ATOTF", "H9ATOTF", "H10ATOTF", "H11ATOTF", "H12ATOTF", "H13ATOTF", "H14ATOTF", "H15ATOTF"))
+
+# Replace HRS missing codes with NA - categorical variables
+cat <- c("R4OUTPT", "R5OUTPT", "R6OUTPT", "R7OUTPT", "R8OUTPT", "R9OUTPT", "R10OUTPT", "R11OUTPT", "R12OUTPT", "R13OUTPT", "R14OUTPT", "R15OUTPT", "R4DRUGS", "R5DRUGS", "R6DRUGS", "R7DRUGS", "R8DRUGS", "R9DRUGS", "R10DRUGS", "R11DRUGS", "R12DRUGS", "R13DRUGS", "R14DRUGS", "R15DRUGS", "R4HOMCAR", "R5HOMCAR", "R6HOMCAR", "R7HOMCAR", "R8HOMCAR", "R9HOMCAR", "R10HOMCAR", "R11HOMCAR", "R12HOMCAR", "R13HOMCAR", "R14HOMCAR", "R15HOMCAR", "R4GOVMR", "R5GOVMR", "R6GOVMR", "R7GOVMR", "R8GOVMR", "R9GOVMR", "R10GOVMR", "R11GOVMR", "R12GOVMR", "R13GOVMR", "R14GOVMR", "R15GOVMR", "R4DIABS", "R5DIABS", "R6DIABS", "R7DIABS", "R8DIABS", "R9DIABS", "R10DIABS", "R11DIABS", "R12DIABS", "R13DIABS", "R14DIABS", "R15DIABS", "R4HIBPS", "R5HIBPS", "R6HIBPS", "R7HIBPS", "R8HIBPS", "R9HIBPS", "R10HIBPS", "R11HIBPS", "R12HIBPS", "R13HIBPS", "R14HIBPS", "R15HIBPS", "R4CANCRS", "R5CANCRS", "R6CANCRS", "R7CANCRS", "R8CANCRS", "R9CANCRS", "R10CANCRS", "R11CANCRS", "R12CANCRS", "R13CANCRS", "R14CANCRS", "R15CANCRS", "R4HEARTS", "R5HEARTS", "R6HEARTS", "R7HEARTS", "R8HEARTS", "R9HEARTS", "R10HEARTS", "R11HEARTS", "R12HEARTS", "R13HEARTS", "R14HEARTS", "R15HEARTS", "R4LUNGS", "R5LUNGS", "R6LUNGS", "R7LUNGS", "R8LUNGS", "R9LUNGS", "R10LUNGS", "R11LUNGS", "R12LUNGS", "R13LUNGS", "R14LUNGS", "R15LUNGS", "R4ARTHRS", "R5ARTHRS", "R6ARTHRS", "R7ARTHRS", "R8ARTHRS", "R9ARTHRS", "R10ARTHRS", "R11ARTHRS", "R12ARTHRS", "R13ARTHRS", "R14ARTHRS", "R15ARTHRS", "R4STROKS", "R5STROKS", "R6STROKS", "R7STROKS", "R8STROKS", "R9STROKS", "R10STROKS", "R11STROKS", "R12STROKS", "R13STROKS", "R14STROKS", "R15STROKS", "R4PSYCHS", "R5PSYCHS", "R6PSYCHS", "R7PSYCHS", "R8PSYCHS", "R9PSYCHS", "R10PSYCHS", "R11PSYCHS", "R12PSYCHS", "R13PSYCHS", "R14PSYCHS", "R15PSYCHS")
+hrs <- mutate(hrs, across(all_of(cat), ~ifelse(.x %in% c("1.Yes", "0.No"), .x, NA)))
+# Replace HRS missing codes with NA and make numeric - numeric variables
+num <- c("R4SHLTC", "R5SHLTC", "R6SHLTC", "R7SHLTC", "R8SHLTC", "R9SHLTC", "R10SHLTC", "R11SHLTC", "R12SHLTC", "R13SHLTC", "R14SHLTC", "R15SHLTC", "R4HSPNIT", "R5HSPNIT", "R6HSPNIT", "R7HSPNIT", "R8HSPNIT", "R9HSPNIT", "R10HSPNIT", "R11HSPNIT", "R12HSPNIT", "R13HSPNIT", "R14HSPNIT", "R15HSPNIT", "R4NRSNIT", "R5NRSNIT", "R6NRSNIT", "R7NRSNIT", "R8NRSNIT", "R9NRSNIT", "R10NRSNIT", "R11NRSNIT", "R12NRSNIT", "R13NRSNIT", "R14NRSNIT", "R15NRSNIT", "R4DOCTIM", "R5DOCTIM", "R6DOCTIM", "R7DOCTIM", "R8DOCTIM", "R9DOCTIM", "R10DOCTIM", "R11DOCTIM", "R12DOCTIM", "R13DOCTIM", "R14DOCTIM", "R15DOCTIM")
+hrs <- mutate(hrs, across(all_of(num), ~ifelse(.x %in% c("-1", "-2", "-3", "-4", "-5", "0", "1", "2", "3", "4", "5"), .x, NA))) %>%
+  mutate(across(all_of(num), as.numeric))
+
+vars <- colnames(hrs)
+# Construct AVGSSI = avg(non-zero values of SSI across all waves)
+x <- hrs[,grep("ISRET", vars)]
+AVGSSI <- apply(x,1,function(x){mean(x[x>0], na.rm=TRUE)})
+hrs <- cbind(hrs, AVGSSI)
+# Drop unneeded ISRET variables and accidentally includes CONDS variables
+hrs <- select(hrs, -c("R4ISRET", "R5ISRET", "R6ISRET", "R7ISRET", "R8ISRET", "R9ISRET", "R10ISRET", "R11ISRET", ,"R12ISRET", "R13ISRET", "R14ISRET", "R15ISRET", "R8CONDS", "R9CONDS"))
+
+# Construct wealth/SSI income-adjusted spending variables (log-transformation)
+# RwMDLIQ = RwOOPMD/HwLIQA - scaled by previous wave
+hrs <- mutate(hrs, "H5MDLIQ" = R5OOPMD/H4LIQA) %>%
+  mutate("R6MDLIQ" = log(R6OOPMD/H5LIQA)) %>%
+  mutate("R7MDLIQ" = log(R7OOPMD/H6LIQA)) %>%
+  mutate("R8MDLIQ" = log(R8OOPMD/H7LIQA)) %>%
+  mutate("R9MDLIQ" = log(R9OOPMD/H8LIQA)) %>%
+  mutate("R10MDLIQ" = log(R10OOPMD/H9LIQA)) %>%
+  mutate("R11MDLIQ" = log(R11OOPMD/H10LIQA)) %>%
+  mutate("R12MDLIQ" = log(R12OOPMD/H11LIQA)) %>%
+  mutate("R13MDLIQ" = log(R13OOPMD/H12LIQA)) %>%
+  mutate("R14MDLIQ" = log(R14OOPMD/H13LIQA)) %>%
+  mutate("R15MDLIQ" = log(R15OOPMD/H14LIQA)) %>%
+  mutate("R4MDLIQ" = rep(NA, 42405)) %>%
+  # RwMDSSI = RwOOPMD/AVGSSI
+  mutate("R4MDSSI" = log(R4OOPMD/AVGSSI)) %>%
+  mutate("R5MDSSI" = log(R5OOPMD/AVGSSI)) %>%
+  mutate("R6MDSSI" = log(R6OOPMD/AVGSSI)) %>%
+  mutate("R7MDSSI" = log(R7OOPMD/AVGSSI)) %>%
+  mutate("R8MDSSI" = log(R8OOPMD/AVGSSI)) %>%
+  mutate("R9MDSSI" = log(R9OOPMD/AVGSSI)) %>%
+  mutate("R10MDSSI" = log(R10OOPMD/AVGSSI)) %>%
+  mutate("R11MDSSI" = log(R11OOPMD/AVGSSI)) %>%
+  mutate("R12MDSSI" = log(R12OOPMD/AVGSSI)) %>%
+  mutate("R13MDSSI" = log(R13OOPMD/AVGSSI)) %>%
+  mutate("R14MDSSI" = log(R14OOPMD/AVGSSI)) %>%
+  mutate("R15MDSSI" = log(R15OOPMD/AVGSSI)) %>%
+  # Drop AVGSSI (we will keep LIQ variables for $1000 criteria and remove them later)
+  select(-c("AVGSSI")) %>%
+  # Try dropping doctor
+  select(-c("R4DOCTIM", "R5DOCTIM", "R6DOCTIM", "R7DOCTIM", "R8DOCTIM", "R9DOCTIM", "R10DOCTIM", "R11DOCTIM", "R12DOCTIM", "R13DOCTIM", "R14DOCTIM", "R15DOCTIM"))
+
+# Build a function given a wave to pull all of the variables associated with that wave
+vars <- colnames(hrs)
+a <- grep("AGE", vars)
+get_wave <- function(w){
+  # Select variables
+  vars_w <- grep(w, vars)
+  # If w = 1-5, remove 11-15
+  if(w <= 5){
+    vars_not_needed <- grep(w+10, vars)
+    vars_w <- setdiff(vars_w, vars_not_needed)
+  }
+  if(w==15){
+    wgt <- grep("R15WTRESP", vars)
+    vars_w <- vars_w[vars_w != wgt]
+    vars_w <- c(1, a, wgt, vars_w)
+  }else{
+    # Add in HHIDPN, Age
+    vars_w <- c(1, a, vars_w)
+  }
+  # Get data
+  subset <- hrs[,vars_w]
+  colnames(subset) <- c("HHIDPN","AGE", "WEIGHT", "HEALTH_CHANGE", "HBP", "DIABETES", "CANCER", "LUNGS", "HEART_ATTACK", "STROKE", "PSYCH", "ARTHRITIS", "OUT_PT", "DRUGS", "HOME_CARE", "SPECIAL_FAC", "HOSPITAL", "NURSING_HOME", "SPENDING", "MEDICARE", "WEALTH", "SPEND_LIQ", "SPEND_SS")
+  return(subset)
+}
+
+# Set up output dataset in long format
+final_long <- as.data.frame(matrix(rep(NA, 23), 1, 23))
+colnames(final_long) <- c("HHIDPN","AGE", "WEIGHT", "HEALTH_CHANGE", "HBP", "DIABETES", "CANCER", "LUNGS", "HEART_ATTACK", "STROKE", "PSYCH", "ARTHRITIS", "OUT_PT", "DRUGS", "HOME_CARE", "SPECIAL_FAC", "HOSPITAL", "NURSING_HOME", "SPENDING", "MEDICARE", "WEALTH", "SPEND_LIQ", "SPEND_SS")
+n <- dim(hrs)[1]
+k <- 1
+# Cycle through each observation
+for(i in 1:n){
+  # Cycle through each wave
+  add <- FALSE
+  for(j in 4:15){
+    wave_data <- get_wave(j)[i,]
+    # Compute age
+    age <- wave_data$AGE + (j - 4)*2
+    na_sum <- sum(is.na(wave_data))
+    # Age range?
+    if(age >= 65){
+      # Check if we should make add true
+      if(add!=TRUE && !is.na(wave_data$MEDICARE) && !is.na(wave_data$WEALTH)){
+        if(wave_data$MEDICARE == "1.Yes" && wave_data$WEALTH >= 1000){
+          add <- TRUE
+        } 
+      }
+      if(add==TRUE && na_sum < 3){
+        wave_data$AGE <- age
+        final_long[k, ] <- wave_data
+        k <- k + 1
+      }
+    }
+  }
+}
+# Unique obs
+u <- unique(final_long$HHIDPN)
+l <- length(u)
+l
+
+# Get avg. # of wvs observed 
+min_wvs <- 5
+wvs_obs <- rep(NA, l)
+for(i in 1:l){
+  # How many waves observed?
+  id <- u[i]
+  this_id <- subset(final_long, final_long$HHIDPN==id)
+  w <- length(this_id$HHIDPN)
+  wvs_obs[i] <- w
+  # Remove if less than 5
+  if(w < 5){
+    final_long <- final_long[final_long$HHIDPN!=id,]
+  }
+}
+# How many unique individuals left?
+length(unique(final_long$HHIDPN))
+
+plot(table(final_long$AGE), xlab="Age", ylab="# of Observations", main="Distribution of Observations by Age", type='l', col='dark red')
+
+# Avg waves observed
+mean(wvs_obs)
+# Avg NAs per individual
+mean(rowSums(is.na(final_long)))
+# NAs by column
+colSums(is.na(final_long))
+
+# Drop Medicare, Spending and Wealth as they are no longer needed
+final_long <- select(final_long, -c("SPENDING", "MEDICARE", "WEALTH"))
+
+# Impute Categorical Predictor Values and make them numeric
+final_long <- mutate(final_long, "OUT_PT" = ifelse(is.na(OUT_PT), "0.No", OUT_PT))  %>%
+  mutate("DRUGS" = ifelse(is.na(DRUGS), "0.No", DRUGS))  %>%
+  mutate("HOME_CARE" = ifelse(is.na(HOME_CARE), "0.No", HOME_CARE))  %>%
+  mutate("SPECIAL_FAC" = ifelse(is.na(SPECIAL_FAC), "0.No", SPECIAL_FAC)) %>%
+  mutate("HBP" = ifelse(is.na(HBP), "0.No", HBP)) %>%
+  mutate("DIABETES" = ifelse(is.na(DIABETES), "0.No", DIABETES)) %>%
+  mutate("CANCER" = ifelse(is.na(CANCER), "0.No", CANCER)) %>%
+  mutate("LUNGS" = ifelse(is.na(LUNGS), "0.No", LUNGS)) %>%
+  mutate("HEART_ATTACK" = ifelse(is.na(HEART_ATTACK), "0.No", HEART_ATTACK)) %>%
+  mutate("STROKE" = ifelse(is.na(STROKE), "0.No", STROKE)) %>%
+  mutate("PSYCH" = ifelse(is.na(PSYCH), "0.No", PSYCH)) %>%
+  mutate("ARTHRITIS" = ifelse(is.na(ARTHRITIS), "0.No", ARTHRITIS))
+final_long <- mutate(final_long, "OUT_PT" = ifelse(OUT_PT=="1.Yes", 1, 0)) %>%
+  mutate("DRUGS" = ifelse(DRUGS=="1.Yes", 1, 0)) %>%
+  mutate("HOME_CARE" = ifelse(HOME_CARE=="1.Yes", 1, 0)) %>%
+  mutate("SPECIAL_FAC" = ifelse(SPECIAL_FAC=="1.Yes", 1, 0)) %>%
+  mutate("HBP" = ifelse(HBP=="1.Yes", 1, 0)) %>%
+  mutate("DIABETES" = ifelse(DIABETES=="1.Yes", 1, 0)) %>%
+  mutate("CANCER" = ifelse(CANCER=="1.Yes", 1, 0)) %>%
+  mutate("LUNGS" = ifelse(LUNGS=="1.Yes", 1, 0)) %>%
+  mutate("HEART_ATTACK" = ifelse(HEART_ATTACK=="1.Yes", 1, 0)) %>%
+  mutate("STROKE" = ifelse(STROKE=="1.Yes", 1, 0)) %>%
+  mutate("PSYCH" = ifelse(PSYCH=="1.Yes", 1, 0)) %>%
+  mutate("ARTHRITIS" = ifelse(ARTHRITIS=="1.Yes", 1, 0))
+# Impute HEALTH_CHANGE and NEW_CONDS to zero
+final_long <- mutate(final_long, "HEALTH_CHANGE" = ifelse(is.na(HEALTH_CHANGE), 0, HEALTH_CHANGE)) %>%
+  mutate("HOSPITAL" = ifelse(is.na(HOSPITAL), 0, HOSPITAL)) %>%
+  mutate("NURSING_HOME" = ifelse(is.na(NURSING_HOME), 0, NURSING_HOME))
+
+# Check that it worked 
+colSums(is.na(final_long))
+
+# Divide by wealth measure that will be used
+liq <- select(final_long, -c("SPEND_SS"))
+ss <- select(final_long, -c("SPEND_LIQ"))
+
+# Delete observations with missing outcome variable
+liq <- subset(liq, liq$SPEND_LIQ < Inf & liq$SPEND_LIQ > -Inf)
+ss <- subset(ss, ss$SPEND_SS < Inf & ss$SPEND_SS > -Inf)
+
+# Liq - check consecutive waves
+u <- unique(liq$HHIDPN)
+l <- length(u)
+for(i in 1:l){
+  consec_wvs <- 1
+  consec <- TRUE
+  # How many waves observed?
+  id <- u[i]
+  this_id <- subset(liq, liq$HHIDPN==id)
+  wvs <- length(this_id$HHIDPN)
+  prev_age <- this_id$AGE[1]
+  w <- 2
+  while(consec == TRUE && w <= wvs){
+    age <- this_id$AGE[w]
+    if(age - prev_age != 2){
+      consec <- FALSE
+    }else{
+      consec_wvs <- consec_wvs + 1
+      prev_age <- age
+      w <- w + 1
+    }
+  }
+  # Remove if less than 5
+  if(consec_wvs < 5){
+    liq <- liq[liq$HHIDPN!=id,]
+  }
+}
+# How many unique individuals left?
+l <- length(unique(liq$HHIDPN))
+l
+
+# Create training and validation sets (70/30 split)
+i <- sample(1:l,floor(.7*l), replace=FALSE)
+train_ids <- unique(liq$HHIDPN)[i]
+liq_train <- subset(liq, liq$HHIDPN %in% train_ids)
+test_ids <- unique(liq$HHIDPN)[-i]
+liq_test <- subset(liq, liq$HHIDPN %in% test_ids)
+
+# SS - check consecutive waves
+u <- unique(ss$HHIDPN)
+l <- length(u)
+for(i in 1:l){
+  consec_wvs <- 1
+  consec <- TRUE
+  # How many waves observed?
+  id <- u[i]
+  this_id <- subset(ss, ss$HHIDPN==id)
+  wvs <- length(this_id$HHIDPN)
+  prev_age <- this_id$AGE[1]
+  w <- 2
+  while(consec == TRUE && w <= wvs){
+    age <- this_id$AGE[w]
+    if(age - prev_age != 2){
+      consec <- FALSE
+    }else{
+      consec_wvs <- consec_wvs + 1
+      prev_age <- age
+      w <- w + 1
+    }
+  }
+  # Remove if less than 5
+  if(consec_wvs < 5){
+    ss <- ss[ss$HHIDPN!=id,]
+  }
+}
+# How many unique individuals left?
+l <- length(unique(ss$HHIDPN))
+l
+
+# Create training and validation sets (70/30 split)
+i <- sample(1:l,floor(.7*l), replace=FALSE)
+train_ids <- unique(ss$HHIDPN)[i]
+ss_train <- subset(ss, ss$HHIDPN %in% train_ids)
+test_ids <- unique(ss$HHIDPN)[-i]
+ss_test <- subset(ss, ss$HHIDPN %in% test_ids)
+
+# Write to csv
+write.csv(liq_train, paste(pwd, "/Data Clean/liq_train.csv", sep = ''))
+write.csv(liq_test, paste(pwd, "/Data Clean/liq_test.csv", sep = ''))
+write.csv(ss_train, paste(pwd, "/Data Clean/ss_train.csv", sep = ''))
+write.csv(ss_test, paste(pwd, "/Data Clean/ss_test.csv", sep = ''))
+
